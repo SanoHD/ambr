@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>ambr</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+	</head>
+	<body style="padding: 20px">
+		<div id="sidenav">
+		</div>
+
+		<div id="content">
+			<input id="content-title" value="a project">
+			<input id="content-description" value="a description">
+
+			<div id="board">
+				<table>
+				</table>
+			</div>
+		</div>
+
+		<script type="text/javascript">
+			let projects = [
+				{
+					"title": "Creating ambr",
+					"color": "#ffaa66",
+					"description": "uwu",
+					"stages": {
+						"todo": [
+							"do something",
+							"do another thing"
+						],
+						"finished": [
+							"nothing, lol",
+							"SIKE",
+							"or is it? hey vsauce, michael here. today im dead. uwu."
+						]
+					}
+				}
+			];
+
+			currentProject = projects[0];
+			document.getElementById("content-title").value = currentProject["title"];
+			document.getElementById("content-description").value = currentProject["description"];
+
+			let sidenav = document.getElementById("sidenav");
+			for (var project of projects) {
+				let snproj = document.createElement("a");
+				snproj.innerHTML = project["title"];
+				snproj.classList.add("sidenav-project");
+				sidenav.appendChild(snproj);
+			}
+
+			let table = document.getElementById("board").getElementsByTagName("table")[0];
+			let stageRow = document.createElement("tr");
+			for (var stage of Object.keys(currentProject["stages"])) {
+				 let stageTitle = document.createElement("th");
+				 stageTitle.innerHTML = stage;
+				 stageTitle.classList.add("content-table-title");
+				 stageRow.appendChild(stageTitle);
+			 }
+			 table.appendChild(stageRow);
+
+
+			let level = 0;
+			while (true) {
+				let allUndefined = true;
+				let row = document.createElement("tr");
+				for (var stage of Object.keys(currentProject["stages"])) {
+					let empty = document.createElement("td");
+					empty.innerHTML = "drag and drop here";
+
+					let element = document.createElement("td");
+					element.innerHTML = currentProject["stages"][stage][level];
+					if (currentProject["stages"][stage][level] !== undefined) {
+						allUndefined = false;
+						row.appendChild(element);
+					} else {
+						row.appendChild(empty);
+					}
+					console.log("Add", currentProject["stages"][stage][level]);
+				}
+				table.appendChild(row);
+
+				level++;
+				if (allUndefined) {
+					break;
+				}
+			}
+
+
+			let snprojects = document.getElementsByClassName("sidenav-project");
+			for (var i = 0; i < projects.length; i++) {
+				let singleProject = snprojects[i];
+				singleProject.style.borderLeft = "10px solid " + projects[i]["color"];
+				singleProject.onmouseover = function() {
+					singleProject.style.borderLeftWidth = "30px";
+					singleProject.style.backgroundColor = "#f0f0f0";
+				};
+				singleProject.onmouseleave = function() {
+					singleProject.style.borderLeftWidth = "10px";
+					singleProject.style.backgroundColor = "#f9f9f9";
+				};
+			}
+		</script>
+	</body>
+</html>

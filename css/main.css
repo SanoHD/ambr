@@ -1,0 +1,93 @@
+@import "fonts.css";
+
+* {
+	font-family: Lato;
+	outline: none;
+}
+
+#sidenav {
+	height: 100%;
+
+	position: fixed;
+	top: 0;
+	left: 0;
+
+	z-index: 1;
+	overflow-x: hidden;
+}
+
+#sidenav>a {
+	display: block;
+	font-family: Lato-Bold;
+
+	color: #555;
+	background-color: #f9f9f9;
+	border: 1px solid #ddd;
+	border-left: 10px solid #66aaff;
+
+	width: 150px;
+
+	padding: 10px;
+	margin-right: 20px;
+	transition: 200ms;
+}
+
+#sidenav>a:hover {
+	border-left: 30px solid #66aaff;
+
+	width: 140px;
+	margin-right: 10px;
+
+	cursor: pointer;
+	transition: 200ms;
+}
+
+#content {
+	border: 1px solid #ddd;
+	width: auto;
+	margin-left: 210px;
+	margin-right: 50px;
+}
+
+#content-title,
+#content-title:focus {
+	font-family: Lora;
+	font-size: 45px;
+	font-weight: bold;
+
+	border: none;
+	border-bottom: 1px solid #555;
+
+	width: 70%;
+	padding-top: 20px;
+	margin-left: 40px;
+	margin-right: 40px;
+}
+
+#content-description,
+#content-description:focus {
+	font-family: Lato;
+	font-size: 15px;
+
+	border: none;
+
+	width: 70%;
+	padding-top: 10px;
+	margin-left: 40px;
+	margin-right: 40px;
+}
+
+#board {
+	overflow-x: scroll;
+	width: 90%;
+}
+
+.content-table-title {
+	font-family: Lora;
+	font-size: 17px;
+
+	width: 200px;
+
+	padding: 20px;
+	margin-top: 50px;
+}

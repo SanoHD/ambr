@@ -1,0 +1,14 @@
+{
+  "name": "ambr",
+  "version": "0.0.1",
+  "description": "Kanban board tool with timelines",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "CMinusMinus",
+  "license": "ISC",
+  "dependencies": {
+    "electron": "^12.0.4"
+  }
+}
