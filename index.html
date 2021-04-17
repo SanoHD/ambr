@@ -25,21 +25,88 @@
 					"title": "Creating ambr",
 					"color": "#ffaa66",
 					"description": "uwu",
-					"stages": {
-						"todo": [
-							"do something",
-							"do another thing"
-						],
-						"finished": [
-							"nothing, lol",
-							"SIKE",
-							"or is it? hey vsauce, michael here. today im dead. uwu."
-						]
-					}
+					"stages": [
+						{
+							"title": "To-do",
+							"cards": {
+								"5cdb8cb0e5e6cc4a78a72d2b47e23fba": {
+									"text": "do something"
+								},
+								"150961aba3e1a4aded166b688eb59649": {
+									"text": "do another thing"
+								}
+							}
+						},
+						{
+							"title": "Finished",
+							"cards": {
+								"195673556ba1cf8efc507bba480ec046": {
+									"text": "nothing lol"
+								},
+								"cb3ba35f40fa0edbd353f63cc6824fc6": {
+									"text": "heeyyy vsauce, michael here. This is a pretty long sentence. Or is it?"
+								},
+								"05b70f0ba3ccb6259ac0cb4bc1c2375a": {
+									"text": "(Bottom text)"
+								}
+							}
+						}
+					]
 				}
 			];
 
+			function idGen() {
+				let id = "";
+				let hex = "0123456789abcdef".split("");
+				for (var i = 0; i < 32; i++) {
+					id += hex[Math.floor(Math.random() * hex.length)];
+				}
+				return id;
+			}
+
+			function cardRemove(id, cellIndex) {
+				for (var column of Object.keys(currentProject["stages"][cellIndex])) {
+					if (column == id) {
+						delete column;
+					}
+				}
+			}
+
+			function cardAdd(id, content, posY) {
+				currentProject["stages"][cellIndex][id] = content;
+			}
+
+			function dragStart() {
+				draggedCard = this;
+				setTimeout(() => (this.classList.add("card-content-invisible")), 0);
+			}
+
+			function dragEnd() {
+				draggedCard = null;
+				this.style.opacity = 0;
+				this.classList.remove("card-content-invisible");
+			}
+
+			function dragEnter() {
+				this.style.opacity = 1;
+			}
+
+			function dragOver(event) {
+				event.preventDefault();
+			}
+
+			function dragDrop(event) {
+				console.log(draggedCard.id);
+				this.style.opacity = 0;
+			}
+
+			function dragLeave() {
+				this.style.opacity = 0;
+			}
+
 			currentProject = projects[0];
+			let draggedCard = null;
+
 			document.getElementById("content-title").value = currentProject["title"];
 			document.getElementById("content-description").value = currentProject["description"];
 
@@ -51,57 +118,104 @@
 				sidenav.appendChild(snproj);
 			}
 
-			let table = document.getElementById("board").getElementsByTagName("table")[0];
-			let stageRow = document.createElement("tr");
-			for (var stage of Object.keys(currentProject["stages"])) {
-				 let stageTitle = document.createElement("th");
-				 stageTitle.innerHTML = stage;
-				 stageTitle.classList.add("content-table-title");
-				 stageRow.appendChild(stageTitle);
-			 }
-			 table.appendChild(stageRow);
+			function reloadContent() {
+				let table = document.getElementById("board").getElementsByTagName("table")[0];
+				let stageRow = document.createElement("tr");
+				for (var stageIndex in currentProject["stages"]) {
+					let stageTitle = document.createElement("th");
+					stageTitle.innerHTML = currentProject["stages"][stageIndex]["title"];
+					stageTitle.classList.add("content-table-title");
+					stageRow.appendChild(stageTitle);
+				}
 
+				table.appendChild(stageRow);
 
-			let level = 0;
-			while (true) {
-				let allUndefined = true;
-				let row = document.createElement("tr");
-				for (var stage of Object.keys(currentProject["stages"])) {
-					let empty = document.createElement("td");
-					empty.innerHTML = "drag and drop here";
+				let level = 0;
+				while (true) {
+					let allUndefined = true;
+					let elementsList = [];
+					let row = document.createElement("tr");
+					row.classList.add("content-table-row");
 
-					let element = document.createElement("td");
-					element.innerHTML = currentProject["stages"][stage][level];
-					if (currentProject["stages"][stage][level] !== undefined) {
-						allUndefined = false;
-						row.appendChild(element);
-					} else {
-						row.appendChild(empty);
+					for (var stage of currentProject["stages"]) {
+						let card = document.createElement("td");
+						card.classList.add("card");
+						card.draggable = true;
+						card.addEventListener("dragstart", dragStart);
+						card.addEventListener("dragend", dragEnd);
+
+						let textContentKey = Object.keys(stage["cards"])[level];
+
+						let textElement = document.createElement("input");
+						textElement.classList.add("card-content")
+
+						if (textContentKey !== undefined) {
+							let textContent = stage["cards"][textContentKey]["text"];
+							card.id = "card-" + textContentKey;
+
+							allUndefined = false;
+							textElement.value = textContent;
+							elementsList.push(textContent);
+						} else {
+							textElement.value = "";
+							card.style.opacity = 0;
+							elementsList.push(undefined);
+						}
+
+						card.appendChild(textElement);
+
+						row.appendChild(card);
 					}
-					console.log("Add", currentProject["stages"][stage][level]);
-				}
-				table.appendChild(row);
 
-				level++;
-				if (allUndefined) {
-					break;
+					table.appendChild(row);
+
+					var dropAreaRow = document.createElement("tr");
+					for (var i = 0; i < Object.keys(currentProject["stages"]).length; i++) {
+						let dropAreaElement = document.createElement("td");
+						if (elementsList[i] !== undefined) {
+							let dropArea = document.createElement("div");
+							dropArea.addEventListener("dragenter", dragEnter);
+							dropArea.addEventListener("dragover", dragOver);
+							dropArea.addEventListener("drop", dragDrop);
+							dropArea.addEventListener("dragleave", dragLeave);
+							dropArea.style.border = "2px solid #4f7";
+							dropArea.style.opacity = 0;
+							dropAreaElement.appendChild(dropArea);
+						}
+						dropAreaRow.appendChild(dropAreaElement);
+					}
+					table.appendChild(dropAreaRow);
+
+					level++;
+					if (allUndefined) {
+						break;
+					}
+				}
+
+				let dropArea = document.createElement("div");
+				dropArea.addEventListener("dragEnter", dragEnter);
+				dropArea.addEventListener("dragOver", dragOver);
+				dropArea.addEventListener("dragDrop", dragDrop);
+				dropArea.addEventListener("dragLeave", dragLeave);
+				dropArea.style.border = "2px solid red";
+
+
+				let snprojects = document.getElementsByClassName("sidenav-project");
+				for (var i = 0; i < projects.length; i++) {
+					let singleProject = snprojects[i];
+					singleProject.style.borderLeft = "10px solid " + projects[i]["color"];
+					singleProject.onmouseover = function() {
+						singleProject.style.borderLeftWidth = "30px";
+						singleProject.style.backgroundColor = "#f0f0f0";
+					};
+					singleProject.onmouseleave = function() {
+						singleProject.style.borderLeftWidth = "10px";
+						singleProject.style.backgroundColor = "#f9f9f9";
+					};
 				}
 			}
 
-
-			let snprojects = document.getElementsByClassName("sidenav-project");
-			for (var i = 0; i < projects.length; i++) {
-				let singleProject = snprojects[i];
-				singleProject.style.borderLeft = "10px solid " + projects[i]["color"];
-				singleProject.onmouseover = function() {
-					singleProject.style.borderLeftWidth = "30px";
-					singleProject.style.backgroundColor = "#f0f0f0";
-				};
-				singleProject.onmouseleave = function() {
-					singleProject.style.borderLeftWidth = "10px";
-					singleProject.style.backgroundColor = "#f9f9f9";
-				};
-			}
+			reloadContent();
 		</script>
 	</body>
 </html>
