@@ -72,7 +72,6 @@
 				// From https://www.kirupa.com/html5/get_element_position_using_javascript.htm
 
 				var xPos = 0;
-				var yPos = 0;
 
 				let _element = element;
 				while (element) {
@@ -116,7 +115,7 @@
 				return i;
 			}
 
-			function insertCardIntoStage(stage, cardId, card, index, goingDown=false) {
+			function insertCardIntoStage(stage, cardId, card, index, goingUp=false) {
 				// Mostly from https://stackoverflow.com/questions/63030107/insert-property-into-object-at-specific-index-in-vanilla-js
 
 				if (Object.keys(stage).length == 0) {
@@ -130,7 +129,7 @@
 					    ...cardsArray
 					]);
 				} else {
-					if (goingDown) {
+					if (goingUp) {
 						index--;
 					}
 
@@ -178,60 +177,16 @@
 				draggedCard = this;
 				droppedCard = null;
 				setTimeout(() => (this.classList.add("card-content-invisible")), 0);
-
-				dragging = setInterval(function() {
-					var closestElement = null;  // The element
-					var closestDistance = null;  // The distance of this element
-					var dist;
-
-					// Get the closest drop area element relative to mouse
-					for (var dropArea of document.getElementsByClassName("drop-area")) {
-						dist = calcCursorDistance(dropArea, mouseX, mouseY);
-						//console.log(dist, closestDistance);
-						if (closestDistance == null || closestElement == null || dist < closestDistance) {
-							//console.log("  SET TO", dist);
-							closestDistance = dist;
-							closestElement = dropArea;
-						}
-					}
-
-					if (closestDistance == null || closestElement == null) {
-						return;
-					}
-
-					closestDropArea = closestElement.firstChild;
-
-					if (closestDropArea == null) {
-						return;
-					}
-
-					// Remove styles of other classes that are not near the cursor
-					for (var el of document.getElementsByClassName("drop-area")) {
-						if (el != closestElement) {
-							closestElement.style.backgroundColor = "";
-							closestElement.classList.remove("drop-area-hover");
-							closestElement.classList.add("drop-area-hover-leave");
-						}
-					}
-
-					closestElement.classList.remove("drop-area-hover-leave");
-					closestElement.classList.add("drop-area-hover");
-					//closestElement.style.backgroundColor = "#ff7799";
-
-				}, 50);
 			}
 
 			function dragEnd() {
 				clearInterval(dragging);
 				draggedCard = null;
-				this.style.opacity = 0;
 				this.classList.remove("card-content-invisible");
 				reloadContent();
 			}
 
-			function dragEnter() {
-				this.style.opacity = 1;
-			}
+			function dragEnter() {}
 
 			function dragOver(event) {
 				/*
@@ -256,16 +211,15 @@
 				let newStage = currentProject["stages"][x]["title"];
 				let stageIndex = getStageIndex(newStage);
 
-				var goingDown;
+				var goingUp;
 				if (stage == newStage) {
 					console.log("SAME STAGE");
 
 					if (Object.keys(getCardsFromStage(stage)).indexOf(cardId) > y) {
-						goingDown = false;
+						goingUp = false;
 					} else {
-						goingDown = true;
+						goingUp = true;
 					}
-
 
 					if (y == Object.keys(getCardsFromStage(stage)).indexOf(cardId) || y == Object.keys(getCardsFromStage(stage)).indexOf(cardId) + 1) {
 						console.log("SAME POS");
@@ -282,32 +236,59 @@
 				delete getCardsFromStage(stage)[cardId];
 
 				// Add card to stage
-				let newCards = insertCardIntoStage(currentProject["stages"][stageIndex]["cards"], cardId, card, y, goingDown);
+				let newCards = insertCardIntoStage(currentProject["stages"][stageIndex]["cards"], cardId, card, y, goingUp);
 
 				currentProject["stages"][stageIndex]["cards"] = newCards;
 
-				this.style.opacity = 0;
 				droppedCard = cardId;
 			}
 
 			function dragLeave() {
-				this.style.opacity = 0;
 				/*
 				this.classList.remove("drop-area-hover");
 				this.classList.add("drop-area-hover-leave");
 				*/
 			}
 
+			function dragging(event) {
+				var closestElement = null;  // The element
+				var closestDistance = null;  // The distance of this element
+				var dist;
+
+				// Get the closest drop area element relative to mouse
+				for (var dropArea of document.getElementsByClassName("drop-area")) {
+					dist = calcCursorDistance(dropArea, event.x, event.y);
+					//console.log(dist, closestDistance);
+					if ((closestDistance == null || closestElement == null) || dist < closestDistance) {
+						//console.log("  SET TO", dist);
+						closestDistance = dist;
+						closestElement = dropArea;
+					}
+				}
+
+				if (closestDistance == null || closestElement == null) {
+					return;
+				}
+
+				if (closestDistance < 150) {  // Doesn't really work yet
+					// Remove styles of other classes that are not near the cursor
+					for (var el of document.getElementsByClassName("drop-area")) {
+						if (el != closestElement) {
+							el.classList.remove("drop-area-hover");
+							el.classList.add("drop-area-hover-leave");
+						}
+					}
+
+					closestElement.classList.remove("drop-area-hover-leave");
+					closestElement.classList.add("drop-area-hover");
+				}
+			}
+
 			currentProject = projects[0];
 			var draggedCard = null;
 			var droppedCard = null;  // Id
 
-			var mouseX;
-			var mouseY;
-			document.body.addEventListener("drag", function(event) {
-				mouseX = event.x;
-				mouseY = event.y;
-			});
+			document.body.addEventListener("drag", dragging);
 
 			document.getElementById("content-title").value = currentProject["title"];
 			document.getElementById("content-description").value = currentProject["description"];
@@ -343,8 +324,6 @@
 					dropArea.addEventListener("dragover", dragOver);
 					dropArea.addEventListener("drop", dragDrop);
 					dropArea.addEventListener("dragleave", dragLeave);
-					dropArea.style.border = "2px solid #4f7";
-					dropArea.style.opacity = 0;
 					dropAreaRow.appendChild(dropArea);
 				}
 				table.appendChild(dropAreaRow);
@@ -404,8 +383,6 @@
 							dropArea.addEventListener("dragover", dragOver);
 							dropArea.addEventListener("drop", dragDrop);
 							dropArea.addEventListener("dragleave", dragLeave);
-							dropArea.style.border = "2px solid #4f7";
-							dropArea.style.opacity = 0;
 						}
 						dropAreaRow.appendChild(dropArea);
 					}
@@ -422,8 +399,6 @@
 				dropArea.addEventListener("dragOver", dragOver);
 				dropArea.addEventListener("dragDrop", dragDrop);
 				dropArea.addEventListener("dragLeave", dragLeave);
-				dropArea.style.border = "2px solid red";
-
 
 				let snprojects = document.getElementsByClassName("sidenav-project");
 				for (var i = 0; i < projects.length; i++) {
