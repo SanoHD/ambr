@@ -65,6 +65,33 @@
 				return id;
 			}
 
+			function calcCursorDistance(element, mx, my) {
+				// From https://www.kirupa.com/html5/get_element_position_using_javascript.htm
+
+				var xPos = 0;
+				var yPos = 0;
+
+				let _element = element;
+				while (element) {
+					xPos += (element.offsetLeft - element.scrollLeft + element.clientLeft);
+					yPos += (element.offsetTop - element.scrollTop + element.clientTop);
+					element = element.offsetParent;
+				}
+
+				// Positions of element
+				let x1 = xPos;
+				let y1 = yPos;
+
+				// Positions of mouse
+				let x2 = mx - (_element.clientWidth / 2);
+				let y2 = my - (_element.clientHeight / 2);
+
+				// Calculate distance
+				let dist = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+
+				return dist;
+			}
+
 			function cardRemove(id, cellIndex) {
 				for (var column of Object.keys(currentProject["stages"][cellIndex])) {
 					if (column == id) {
@@ -97,8 +124,7 @@
 				if (index == 0) {
 					var newStagesObject = Object.fromEntries([
 					    ...[[cardId, card]],
-						stagesArray[index],
-					    ...stagesArray.slice(1)
+					    ...stagesArray
 					]);
 				} else {
 					var newStagesObject = Object.fromEntries([
@@ -141,13 +167,55 @@
 				return false;
 			}
 
-			function dragStart() {
+			function dragStart(event) {
 				draggedCard = this;
 				droppedCard = null;
 				setTimeout(() => (this.classList.add("card-content-invisible")), 0);
+
+				dragging = setInterval(function() {
+					var closestElement = null;  // The element
+					var closestDistance = null;  // The distance of this element
+					var dist;
+
+					// Get the closest drop area element relative to mouse
+					for (var dropArea of document.getElementsByClassName("drop-area")) {
+						dist = calcCursorDistance(dropArea, mouseX, mouseY);
+						//console.log(dist, closestDistance);
+						if (closestDistance == null || closestElement == null || dist < closestDistance) {
+							//console.log("  SET TO", dist);
+							closestDistance = dist;
+							closestElement = dropArea;
+						}
+					}
+
+					if (closestDistance == null || closestElement == null) {
+						return;
+					}
+
+					closestDropArea = closestElement.firstChild;
+
+					if (closestDropArea == null) {
+						return;
+					}
+
+					// Remove styles of other classes that are not near the cursor
+					for (var el of document.getElementsByClassName("drop-area")) {
+						if (el != closestElement) {
+							closestElement.style.backgroundColor = "";
+							closestElement.classList.remove("drop-area-hover");
+							closestElement.classList.add("drop-area-hover-leave");
+						}
+					}
+
+					closestElement.classList.remove("drop-area-hover-leave");
+					closestElement.classList.add("drop-area-hover");
+					//closestElement.style.backgroundColor = "#ff7799";
+
+				}, 50);
 			}
 
 			function dragEnd() {
+				clearInterval(dragging);
 				draggedCard = null;
 				this.style.opacity = 0;
 				this.classList.remove("card-content-invisible");
@@ -159,10 +227,12 @@
 			}
 
 			function dragOver(event) {
+				/*
 				this.style.paddingBottom = "15px";
+
 				this.classList.remove("drop-area-hover-leave");
 				this.classList.add("drop-area-hover");
-				console.log("DRAG");
+				*/
 
 				event.preventDefault();
 			}
@@ -202,15 +272,22 @@
 
 			function dragLeave() {
 				this.style.opacity = 0;
-				console.log("LEAVE");
+				/*
 				this.classList.remove("drop-area-hover");
 				this.classList.add("drop-area-hover-leave");
-				this.style.padding = "0px";
+				*/
 			}
 
 			currentProject = projects[0];
 			var draggedCard = null;
 			var droppedCard = null;  // Id
+
+			var mouseX;
+			var mouseY;
+			document.body.addEventListener("drag", function(event) {
+				mouseX = event.x;
+				mouseY = event.y;
+			});
 
 			document.getElementById("content-title").value = currentProject["title"];
 			document.getElementById("content-description").value = currentProject["description"];
@@ -240,6 +317,8 @@
 				var dropAreaRow = document.createElement("tr");
 				for (var i = 0; i < Object.keys(currentProject["stages"]).length; i++) {
 					let dropAreaElement = document.createElement("td");
+					dropAreaElement.classList.add("drop-area");
+
 					let dropArea = document.createElement("div");
 					dropArea.addEventListener("dragenter", dragEnter);
 					dropArea.addEventListener("dragover", dragOver);
@@ -300,6 +379,8 @@
 						*/
 
 						let dropAreaElement = document.createElement("td");
+						dropAreaElement.classList.add("drop-area");
+
 						if (elementsList[i] !== undefined) {
 							let dropArea = document.createElement("div");
 							dropArea.addEventListener("dragenter", dragEnter);
@@ -343,14 +424,18 @@
 				}
 
 				if (droppedCard != null) {
-					let tempCard = document.getElementById("card-" + droppedCard);
-					let tempCardContent = tempCard.firstElementChild;
-					tempCard.classList.add("card-drop-animation");
-					tempCardContent.classList.add("card-content-drop-animation");
-					setTimeout(function() {
-						tempCard.classList.remove("card-drop-animation");
-						tempCardContent.classList.remove("card-content-drop-animation");
-					}, 1500);
+					try {
+						let tempCard = document.getElementById("card-" + droppedCard);
+						let tempCardContent = tempCard.firstElementChild;
+						tempCard.classList.add("card-drop-animation");
+						tempCardContent.classList.add("card-content-drop-animation");
+						setTimeout(function() {
+							tempCard.classList.remove("card-drop-animation");
+							tempCardContent.classList.remove("card-content-drop-animation");
+						}, 1500);
+					} catch (e) {
+
+					}
 				}
 			}
 
