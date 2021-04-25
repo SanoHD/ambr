@@ -110,3 +110,52 @@
 .card-content-invisible {
 	opacity: 0;
 }
+
+.card-content-drop-animation {
+	animation-name: cardContentDropAnimation;
+	animation-duration: 300ms;
+	animation-fill-mode: forwards;
+	animation-timing-function: ease-in;
+}
+
+.card-drop-animation {
+	animation-name: cardDropAnimation;
+	animation-duration: 200ms;
+	animation-fill-mode: forwards;
+	animation-timing-function: ease-in;
+}
+
+@keyframes cardDropAnimation {
+	0% {opacity: 0}
+	100% {opacity: 1}
+}
+
+@keyframes cardContentDropAnimation {
+	0% {width: 0%}
+	100% {width: 80%}
+}
+
+.drop-area-hover {
+	animation-name: dropAreaHover;
+	animation-duration: 200ms;
+	animation-fill-mode: forwards;
+	animation-timing-function: ease-in;
+}
+
+.drop-area-hover-leave {
+	animation-name: dropAreaHoverLeave;
+	animation-duration: 200ms;
+	animation-fill-mode: forwards;
+	animation-timing-function: ease-in;
+}
+
+
+@keyframes dropAreaHover {
+	0% {padding-bottom: 0px}
+	100% {padding-bottom: 15px}
+}
+
+@keyframes dropAreaHoverLeave {
+	0% {padding-bottom: 15px}
+	100% {padding-bottom: 0px}
+}
