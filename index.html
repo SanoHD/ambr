@@ -20,6 +20,7 @@
 		</div>
 
 		<script type="text/javascript">
+			const fs = require("fs");
 			let projects = [
 				{
 					"title": "Creating ambr",
@@ -44,7 +45,7 @@
 									"text": "nothing lol"
 								},
 								"cb3ba35f40fa0edbd353f63cc6824fc6": {
-									"text": "heeyyy vsauce, michael here. This is a pretty long sentence. Or is it?"
+									"text": "heeyyy Vsauce, Mchael here. This is a pretty long sentence. Or is it?"
 								},
 								"05b70f0ba3ccb6259ac0cb4bc1c2375a": {
 									"text": "(Bottom text)"
@@ -76,6 +77,66 @@
 				currentProject["stages"][cellIndex][id] = content;
 			}
 
+			function getChildIndex(child) {
+				var i = 0;
+				while ((child = child.previousSibling) != null) {
+					i++;
+				}
+
+				return i;
+			}
+
+			function insertCardIntoStage(stage, cardId, card, index) {
+				// Mostly from https://stackoverflow.com/questions/63030107/insert-property-into-object-at-specific-index-in-vanilla-js
+
+				var stagesArray = Object.entries(stage);
+				if (index == 0) {
+					var newStagesObject = Object.fromEntries([
+					    ...[[cardId, card]],
+						stagesArray[index],
+					    ...stagesArray.slice(1)
+					]);
+				} else {
+					var newStagesObject = Object.fromEntries([
+					    ...stagesArray.slice(0, index - 1),
+					    stagesArray[index - 1],
+					    ...[[cardId, card]],
+					    ...stagesArray.slice(index)
+					]);
+				}
+
+				return newStagesObject;
+			}
+
+			function findStageFromId(id) {
+				for (var stage of currentProject["stages"]) {
+					for (var card of Object.keys(stage["cards"])) {
+						if ("card-" + card == id) {
+							return stage["title"];
+						}
+					}
+				}
+				return false;
+			}
+
+			function getCardsFromStage(stageTitle) {
+				for (var stage of currentProject["stages"]) {
+					if (stage["title"] == stageTitle) {
+						return stage["cards"];
+					}
+				}
+			}
+
+			function getStageIndex(stageTitle) {
+				for (var stage in currentProject["stages"]) {
+					if (currentProject["stages"][stage]["title"] == stageTitle) {
+						return stage;
+					}
+				}
+
+				return false;
+			}
+
 			function dragStart() {
 				draggedCard = this;
 				setTimeout(() => (this.classList.add("card-content-invisible")), 0);
@@ -96,8 +157,36 @@
 			}
 
 			function dragDrop(event) {
-				console.log(draggedCard.id);
+				let x = event.target.parentNode.cellIndex;
+				let y = getChildIndex(event.target.parentNode.parentNode) / 2 - 0.5;
+				let cardId = draggedCard.id.slice(5);
+
+				//console.log(draggedCard.id, "->", "X = " + x + ", Y = " + y);
+
+				// findStageFromId can return false, add an error for this
+				let stage = findStageFromId(draggedCard.id)
+				let newStage = currentProject["stages"][x]["title"]
+
+				// Temporary save card
+				/*
+				console.dir(currentProject["stages"]);
+				console.log(stage);
+				console.log(cardId);
+				*/
+
+				let card = getCardsFromStage(stage)[cardId];
+
+				// Remove card from stage
+				delete getCardsFromStage(stage)[cardId];
+
+				// Add card to stage
+				let stageIndex = getStageIndex(newStage);
+				let newCards = insertCardIntoStage(currentProject["stages"][stageIndex]["cards"], cardId, card, y);
+
+				currentProject["stages"][stageIndex]["cards"] = newCards;
+
 				this.style.opacity = 0;
+				reloadContent();
 			}
 
 			function dragLeave() {
@@ -120,6 +209,8 @@
 
 			function reloadContent() {
 				let table = document.getElementById("board").getElementsByTagName("table")[0];
+				table.innerHTML = "";
+
 				let stageRow = document.createElement("tr");
 				for (var stageIndex in currentProject["stages"]) {
 					let stageTitle = document.createElement("th");
@@ -129,6 +220,21 @@
 				}
 
 				table.appendChild(stageRow);
+
+				var dropAreaRow = document.createElement("tr");
+				for (var i = 0; i < Object.keys(currentProject["stages"]).length; i++) {
+					let dropAreaElement = document.createElement("td");
+					let dropArea = document.createElement("div");
+					dropArea.addEventListener("dragenter", dragEnter);
+					dropArea.addEventListener("dragover", dragOver);
+					dropArea.addEventListener("drop", dragDrop);
+					dropArea.addEventListener("dragleave", dragLeave);
+					dropArea.style.border = "2px solid #4f7";
+					dropArea.style.opacity = 0;
+					dropAreaElement.appendChild(dropArea);
+					dropAreaRow.appendChild(dropAreaElement);
+				}
+				table.appendChild(dropAreaRow);
 
 				let level = 0;
 				while (true) {
