@@ -89,6 +89,10 @@
 			function insertCardIntoStage(stage, cardId, card, index) {
 				// Mostly from https://stackoverflow.com/questions/63030107/insert-property-into-object-at-specific-index-in-vanilla-js
 
+				if (Object.keys(stage).length == 0) {
+					return {cardId: card};
+				}
+
 				var stagesArray = Object.entries(stage);
 				if (index == 0) {
 					var newStagesObject = Object.fromEntries([
@@ -139,6 +143,7 @@
 
 			function dragStart() {
 				draggedCard = this;
+				droppedCard = null;
 				setTimeout(() => (this.classList.add("card-content-invisible")), 0);
 			}
 
@@ -146,6 +151,7 @@
 				draggedCard = null;
 				this.style.opacity = 0;
 				this.classList.remove("card-content-invisible");
+				reloadContent();
 			}
 
 			function dragEnter() {
@@ -153,6 +159,11 @@
 			}
 
 			function dragOver(event) {
+				this.style.paddingBottom = "15px";
+				this.classList.remove("drop-area-hover-leave");
+				this.classList.add("drop-area-hover");
+				console.log("DRAG");
+
 				event.preventDefault();
 			}
 
@@ -186,15 +197,20 @@
 				currentProject["stages"][stageIndex]["cards"] = newCards;
 
 				this.style.opacity = 0;
-				reloadContent();
+				droppedCard = cardId;
 			}
 
 			function dragLeave() {
 				this.style.opacity = 0;
+				console.log("LEAVE");
+				this.classList.remove("drop-area-hover");
+				this.classList.add("drop-area-hover-leave");
+				this.style.padding = "0px";
 			}
 
 			currentProject = projects[0];
-			let draggedCard = null;
+			var draggedCard = null;
+			var droppedCard = null;  // Id
 
 			document.getElementById("content-title").value = currentProject["title"];
 			document.getElementById("content-description").value = currentProject["description"];
@@ -277,6 +293,12 @@
 
 					var dropAreaRow = document.createElement("tr");
 					for (var i = 0; i < Object.keys(currentProject["stages"]).length; i++) {
+						/*
+						if (currentProject["stages"][i].length == 0) {
+							continue;
+						}
+						*/
+
 						let dropAreaElement = document.createElement("td");
 						if (elementsList[i] !== undefined) {
 							let dropArea = document.createElement("div");
@@ -318,6 +340,17 @@
 						singleProject.style.borderLeftWidth = "10px";
 						singleProject.style.backgroundColor = "#f9f9f9";
 					};
+				}
+
+				if (droppedCard != null) {
+					let tempCard = document.getElementById("card-" + droppedCard);
+					let tempCardContent = tempCard.firstElementChild;
+					tempCard.classList.add("card-drop-animation");
+					tempCardContent.classList.add("card-content-drop-animation");
+					setTimeout(function() {
+						tempCard.classList.remove("card-drop-animation");
+						tempCardContent.classList.remove("card-content-drop-animation");
+					}, 1500);
 				}
 			}
 
