@@ -101,8 +101,10 @@
 }
 
 .card-content {
+	font-size: 12px;
 	border: none;
 	width: 80%;
+	word-break: break-all;
 }
 
 .card-content-invisible {
