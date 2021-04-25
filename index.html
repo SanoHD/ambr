@@ -49,6 +49,9 @@
 								},
 								"05b70f0ba3ccb6259ac0cb4bc1c2375a": {
 									"text": "(Bottom text)"
+								},
+								"b05f1451fbed4e7cbf57cfb511077c2d": {
+									"text": "PROGRESS!"
 								}
 							}
 						}
@@ -113,25 +116,29 @@
 				return i;
 			}
 
-			function insertCardIntoStage(stage, cardId, card, index) {
+			function insertCardIntoStage(stage, cardId, card, index, goingDown=false) {
 				// Mostly from https://stackoverflow.com/questions/63030107/insert-property-into-object-at-specific-index-in-vanilla-js
 
 				if (Object.keys(stage).length == 0) {
 					return {cardId: card};
 				}
 
-				var stagesArray = Object.entries(stage);
+				var cardsArray = Object.entries(stage);
 				if (index == 0) {
 					var newStagesObject = Object.fromEntries([
 					    ...[[cardId, card]],
-					    ...stagesArray
+					    ...cardsArray
 					]);
 				} else {
+					if (goingDown) {
+						index--;
+					}
+
 					var newStagesObject = Object.fromEntries([
-					    ...stagesArray.slice(0, index - 1),
-					    stagesArray[index - 1],
+					    ...cardsArray.slice(0, index - 1),
+					    cardsArray[index - 1],
 					    ...[[cardId, card]],
-					    ...stagesArray.slice(index)
+					    ...cardsArray.slice(index)
 					]);
 				}
 
@@ -238,31 +245,44 @@
 			}
 
 			function dragDrop(event) {
-				let x = event.target.parentNode.cellIndex;
-				let y = getChildIndex(event.target.parentNode.parentNode) / 2 - 0.5;
+				let x = event.target.cellIndex;
+				let y = getChildIndex(event.target.parentNode) / 2 - 0.5;
 				let cardId = draggedCard.id.slice(5);
 
 				//console.log(draggedCard.id, "->", "X = " + x + ", Y = " + y);
 
 				// findStageFromId can return false, add an error for this
-				let stage = findStageFromId(draggedCard.id)
-				let newStage = currentProject["stages"][x]["title"]
+				let stage = findStageFromId(draggedCard.id);
+				let newStage = currentProject["stages"][x]["title"];
+				let stageIndex = getStageIndex(newStage);
+
+				var goingDown;
+				if (stage == newStage) {
+					console.log("SAME STAGE");
+
+					if (Object.keys(getCardsFromStage(stage)).indexOf(cardId) > y) {
+						goingDown = false;
+					} else {
+						goingDown = true;
+					}
+
+
+					if (y == Object.keys(getCardsFromStage(stage)).indexOf(cardId) || y == Object.keys(getCardsFromStage(stage)).indexOf(cardId) + 1) {
+						console.log("SAME POS");
+						return;
+					}
+				} else {
+					inSameStage = false;
+				}
 
 				// Temporary save card
-				/*
-				console.dir(currentProject["stages"]);
-				console.log(stage);
-				console.log(cardId);
-				*/
-
 				let card = getCardsFromStage(stage)[cardId];
 
 				// Remove card from stage
 				delete getCardsFromStage(stage)[cardId];
 
 				// Add card to stage
-				let stageIndex = getStageIndex(newStage);
-				let newCards = insertCardIntoStage(currentProject["stages"][stageIndex]["cards"], cardId, card, y);
+				let newCards = insertCardIntoStage(currentProject["stages"][stageIndex]["cards"], cardId, card, y, goingDown);
 
 				currentProject["stages"][stageIndex]["cards"] = newCards;
 
@@ -316,18 +336,16 @@
 
 				var dropAreaRow = document.createElement("tr");
 				for (var i = 0; i < Object.keys(currentProject["stages"]).length; i++) {
-					let dropAreaElement = document.createElement("td");
-					dropAreaElement.classList.add("drop-area");
+					let dropArea = document.createElement("td");
+					dropArea.classList.add("drop-area");
 
-					let dropArea = document.createElement("div");
 					dropArea.addEventListener("dragenter", dragEnter);
 					dropArea.addEventListener("dragover", dragOver);
 					dropArea.addEventListener("drop", dragDrop);
 					dropArea.addEventListener("dragleave", dragLeave);
 					dropArea.style.border = "2px solid #4f7";
 					dropArea.style.opacity = 0;
-					dropAreaElement.appendChild(dropArea);
-					dropAreaRow.appendChild(dropAreaElement);
+					dropAreaRow.appendChild(dropArea);
 				}
 				table.appendChild(dropAreaRow);
 
@@ -378,20 +396,18 @@
 						}
 						*/
 
-						let dropAreaElement = document.createElement("td");
-						dropAreaElement.classList.add("drop-area");
+						let dropArea = document.createElement("td");
+						dropArea.classList.add("drop-area");
 
 						if (elementsList[i] !== undefined) {
-							let dropArea = document.createElement("div");
 							dropArea.addEventListener("dragenter", dragEnter);
 							dropArea.addEventListener("dragover", dragOver);
 							dropArea.addEventListener("drop", dragDrop);
 							dropArea.addEventListener("dragleave", dragLeave);
 							dropArea.style.border = "2px solid #4f7";
 							dropArea.style.opacity = 0;
-							dropAreaElement.appendChild(dropArea);
 						}
-						dropAreaRow.appendChild(dropAreaElement);
+						dropAreaRow.appendChild(dropArea);
 					}
 					table.appendChild(dropAreaRow);
 
