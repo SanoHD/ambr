@@ -98,6 +98,8 @@
 	border: 1px solid #ddd;
 	padding: 10px;
 	margin: 7px;
+
+	cursor: pointer;
 }
 
 .card-content {
@@ -140,6 +142,8 @@
 	animation-duration: 200ms;
 	animation-fill-mode: forwards;
 	animation-timing-function: ease-in;
+
+	background-color: darkgray;
 }
 
 .drop-area-hover-leave {
