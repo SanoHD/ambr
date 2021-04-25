@@ -143,23 +143,25 @@
 	animation-fill-mode: forwards;
 	animation-timing-function: ease-in;
 
-	background-color: darkgray;
+	border: 2px dotted #ccc;
 }
 
 .drop-area-hover-leave {
 	animation-name: dropAreaHoverLeave;
-	animation-duration: 200ms;
+	animation-duration: 100ms;
 	animation-fill-mode: forwards;
 	animation-timing-function: ease-in;
+
+	border: none;
 }
 
 
 @keyframes dropAreaHover {
 	0% {padding-bottom: 0px}
-	100% {padding-bottom: 15px}
+	100% {padding-bottom: 30px}
 }
 
 @keyframes dropAreaHoverLeave {
-	0% {padding-bottom: 15px}
+	0% {padding-bottom: 30px}
 	100% {padding-bottom: 0px}
 }
