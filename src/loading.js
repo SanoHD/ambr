@@ -4,12 +4,18 @@ exports.loadLayout = function(projectIndex) {
 	let content = document.getElementById("content");
 	content.innerHTML = "";  // Clear content div
 
-	let title = document.createElement("input");  // Title
-	title.id = "content-title";
-	title.value = currentProject["title"];
-	title.spellcheck = false;
+	let projectName = document.createElement("input");  // Project Name
+	projectName.onchange = function() {
+		contentOps.updateProjectName(projectName.value);
+	}
+	projectName.id = "content-title";
+	projectName.value = currentProject["name"];
+	projectName.spellcheck = false;
 
 	let description = document.createElement("input");  // Description
+	description.onchange = function() {
+		contentOps.updateProjectDescription(description.value);
+	}
 	description.id = "content-description";
 	description.value = currentProject["description"];
 	description.spellcheck = false;
@@ -36,7 +42,7 @@ exports.loadLayout = function(projectIndex) {
 	board.appendChild(boardTable);  // Add board table to table div
 
 	// Combine all
-	content.appendChild(title);
+	content.appendChild(projectName);
 	content.appendChild(description);
 	content.appendChild(board);
 
@@ -89,6 +95,9 @@ exports.loadContent = function() {
 		let stageTitle = document.createElement("th");
 
 		let stageTitleInput = document.createElement("input");
+		stageTitleInput.onchange = function() {
+			contentOps.updateStageTitle(stageIndex, stageTitleInput.value);
+		}
 		stageTitleInput.classList.add("content-table-title");
 		stageTitleInput.value = currentProject["stages"][stageIndex]["title"];
 		stageTitleInput.spellcheck = false;
@@ -160,6 +169,10 @@ exports.loadContent = function() {
 			if (textContentKey !== undefined) {
 				let textContent = stage["cards"][textContentKey]["text"];
 				card.id = "card-" + textContentKey;
+
+				textElement.onchange = function() {
+					contentOps.updateCard(textContentKey, textElement.value);
+				}
 
 				allUndefined = false;
 				textElement.value = textContent;

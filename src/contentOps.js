@@ -75,3 +75,27 @@ exports.cardRemove = function(id) {
 
 	loading.loadContent();
 }
+
+exports.updateCard = function(id, text) {
+	console.log(id);
+	let stageIndex = misc.getStageIndex(misc.findStageFromId(id));
+
+	console.log(stageIndex);
+
+	currentProject["stages"][stageIndex]["cards"][id] = {
+		text: text
+	};
+	loading.loadContent();
+}
+
+exports.updateStageTitle = function(stageIndex, title) {
+	currentProject["stages"][stageIndex]["title"] = title;
+}
+
+exports.updateProjectName = function(name) {
+	currentProject["name"] = name;
+}
+
+exports.updateProjectDescription = function(description) {
+	currentProject["description"] = description;
+}

@@ -36,9 +36,13 @@ exports.setFooterInfo = function(text) {
 }
 
 exports.findStageFromId = function(id) {
+	if (id.startsWith("card-")) {
+		id = id.slice(5);
+	}
+
 	for (var stage of currentProject["stages"]) {
 		for (var card of Object.keys(stage["cards"])) {
-			if ("card-" + card == id) {
+			if (card == id) {
 				return stage["title"];
 			}
 		}
@@ -55,9 +59,9 @@ exports.getCardsFromStage = function(stageTitle) {
 }
 
 exports.getStageIndex = function(stageTitle) {
-	for (var stage in currentProject["stages"]) {
-		if (currentProject["stages"][stage]["title"] == stageTitle) {
-			return stage;
+	for (var stageIndex in currentProject["stages"]) {
+		if (currentProject["stages"][stageIndex]["title"] == stageTitle) {
+			return stageIndex;
 		}
 	}
 
