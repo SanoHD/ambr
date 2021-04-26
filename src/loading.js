@@ -56,13 +56,13 @@ exports.loadSidenav = function() {
 	sidenav.innerHTML = "";
 	for (var pi in projects) {
 		let snproj = document.createElement("a");
-		snproj.innerHTML = projects[pi]["title"];
+		snproj.innerHTML = projects[pi]["name"];
 
 		snproj.style.borderLeft = "10px solid " + projects[pi]["color"];
 
 		snproj.onmouseover = function() {
 			snproj.style.borderLeftWidth = "30px";
-			snproj.style.backgroundColor = "#f0f0f0";
+			snproj.style.filter = "contrast(0.9)";
 		};
 
 		snproj.onclick = function() {
@@ -71,7 +71,7 @@ exports.loadSidenav = function() {
 
 		snproj.onmouseleave = function() {
 			snproj.style.borderLeftWidth = "10px";
-			snproj.style.backgroundColor = "#f9f9f9";
+			snproj.style.filter = "contrast(1)";
 		};
 
 		snproj.classList.add("sidenav-project");
