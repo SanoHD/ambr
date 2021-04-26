@@ -7,6 +7,7 @@ const misc = require("./misc.js");
 
 const copy = require("copy-to-clipboard");
 const fs = require("fs");
+const {shell} = require("electron");
 
 
 let projects = [

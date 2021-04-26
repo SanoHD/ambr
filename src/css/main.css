@@ -5,6 +5,15 @@
 	outline: none;
 }
 
+#logo {
+	float: right;
+	margin-top: -20px;
+
+	width: 150px;
+
+	cursor: pointer;
+}
+
 #sidenav {
 	height: 100%;
 
@@ -77,6 +86,7 @@
 	width: 80%;
 	margin-left: 210px;
 	margin-right: 50px;
+	margin-top: 50px;
 }
 
 #content-title,
