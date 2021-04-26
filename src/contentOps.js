@@ -1,6 +1,6 @@
 exports.addProject = function() {
 	let newProject = {
-		"title": "My Project",
+		"name": "My Project",
 		"color": generate.randomColor(),
 		"description": "Add a description here!",
 		"stages": []
