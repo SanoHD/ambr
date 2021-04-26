@@ -109,7 +109,7 @@
 }
 
 #board {
-	overflow-x: scroll;
+	overflow-x: auto;
 	width: 90%;
 }
 
