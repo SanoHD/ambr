@@ -109,8 +109,6 @@ exports.insertCardIntoStage = function(stage, cardId, card, index, goingUp=false
 			index--;
 		}
 
-		console.log(cardsArray, index);
-
 		var newStagesObject = Object.fromEntries([
 			...cardsArray.slice(0, index - 1),
 			cardsArray[index - 1],
