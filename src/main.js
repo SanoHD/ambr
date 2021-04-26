@@ -12,7 +12,7 @@ const {shell} = require("electron");
 
 let projects = [
 	{
-		"title": "Creating ambr",
+		"name": "Creating ambr",
 		"color": "#ffaa66",
 		"description": "uwu",
 		"stages": [
