@@ -11,6 +11,73 @@ exports.addProject = function() {
 	loading.loadSidenav();
 }
 
+exports.loadProjects = function() {
+	let allProjectsFile;  // projects/.allProjects.json
+
+	try {
+		allProjectsFile = fs.readFileSync("projects/.allProjects.json", "utf8", function(err){
+			if (err) {
+				dialog.showMessageBoxSync({
+					message: "Could not load 'ambr/projects/.allProjects.json' | " + err,
+					type: "error"
+				});
+				return false;
+			}
+		});
+	} catch (e) {
+		dialog.showMessageBoxSync({
+			message: "Could not load 'ambr/projects/.allProjects.json' | " + e,
+			type: "error"
+		});
+
+		return false;
+	}
+
+	if (allProjectsFile.trim() == "") {
+		allProjectsFile = "[]";
+	}
+
+	// Load all projects from ambr/projects/.allProjects.json
+	try {
+		allProjectsArray = JSON.parse(allProjectsFile);
+		for (var file of allProjectsArray) {
+			if (!file.endsWith(".ambrpro")) {continue}
+
+			// Make it an absolute path (projects/example.ambrpro -> /home/user/.../projects/example.ambrpro)
+			fileAbs = path.resolve(file);
+
+			let proj = JSON.parse(fs.readFileSync(fileAbs, "utf8", function(err) {
+				if (err) {
+					dialog.showMessageBoxSync({
+						message: "Could not load '" + fileAbs + "' | Error: " + e,
+						type: "error"
+					});
+				}
+			}));
+
+
+
+			projects.push(proj);
+		}
+
+	} catch (e) {
+		dialog.showMessageBoxSync({
+			message: "Could not load projects out of 'ambr/projects/.allProjects.json' | " + e,
+			type: "error"
+		});
+	}
+}
+
+exports.saveProject = function() {
+	console.log(dialog);
+
+	let filePath = dialog.showOpenDialogSync({
+		properties: ["openFile"]
+	});
+
+	console.log(filePath);
+}
+
 exports.addStage = function() {
 	let newStage = {
 		"title": "New stage",
