@@ -42,6 +42,38 @@
 	transition: 200ms;
 }
 
+.add-button {
+	display: block;
+	text-align: center;
+	vertical-align: middle;
+
+	font-family: Lato-Bold;
+	font-size: 10px;
+	font-weight: bold;
+
+	color: #ccc;
+	border: 1px solid #eee;
+	border-radius: 5px;
+
+	width: 50px;
+	height: 20px;
+	line-height: 20px;
+
+	padding: 1px;
+	margin: 10px;
+	transition: 200ms;
+
+	user-select: none;
+	cursor: pointer;
+}
+
+.add-button:hover {
+	color: #aaa;
+	background-color: #f5f5f5;
+}
+
+
+
 #content {
 	border: 1px solid #ddd;
 	width: auto;
@@ -83,13 +115,18 @@
 }
 
 .content-table-title {
+	text-align: center;
 	font-family: Lora;
 	font-size: 17px;
+	font-weight: bold;
+
+	border: none;
 
 	width: 200px;
 
-	padding: 20px;
+	padding: 10px;
 	margin-top: 50px;
+	outline: none;
 }
 
 .content-table-row {}
@@ -107,6 +144,7 @@
 	border: none;
 	width: 80%;
 	word-break: break-all;
+	outline: none;
 }
 
 .card-content-invisible {
@@ -155,7 +193,6 @@
 	border: none;
 }
 
-
 @keyframes dropAreaHover {
 	0% {padding-bottom: 0px}
 	100% {padding-bottom: 30px}
@@ -164,4 +201,48 @@
 @keyframes dropAreaHoverLeave {
 	0% {padding-bottom: 30px}
 	100% {padding-bottom: 0px}
+}
+
+#context-menu-card {
+	display: none;
+	position: fixed;
+
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 2px;
+
+	box-shadow: 2px 2px 2px #ccc;
+
+	width: 100px;
+
+	z-index: 10;
+
+	animation-name: contextMenuAnimation;
+	animation-fill-mode: forwards;
+	animation-duration: 200ms;
+	animation-timing-function: ease-out;
+
+	transition: 100ms;
+}
+
+#context-menu-card>p {
+	padding: 2px;
+	margin: 2px;
+}
+
+#context-menu-card>p:hover {
+	background-color: #eee;
+}
+
+
+@keyframes contextMenuAnimation {
+	0% {
+		opacity: 0;
+		margin-left: -10px;
+	}
+
+	100% {
+		opacity: 1;
+		margin-left: 0px;
+	}
 }

@@ -6,17 +6,14 @@
 		<link rel="stylesheet" type="text/css" href="css/main.css">
 	</head>
 	<body style="padding: 20px">
+		<div id="context-menu-card">
+			<p>hi</p>
+		</div>
+
 		<div id="sidenav">
 		</div>
 
 		<div id="content">
-			<input id="content-title" value="a project">
-			<input id="content-description" value="a description">
-
-			<div id="board">
-				<table>
-				</table>
-			</div>
 		</div>
 
 		<script type="text/javascript">
@@ -59,7 +56,12 @@
 				}
 			];
 
-			function idGen() {
+			function genId() {
+				/*
+				This function generates a 32-character long hex id used
+				for cards. Their HTML-Ids will look like this: "card-ba8732..."
+				*/
+
 				let id = "";
 				let hex = "0123456789abcdef".split("");
 				for (var i = 0; i < 32; i++) {
@@ -68,10 +70,171 @@
 				return id;
 			}
 
+			function loadLayout(projectIndex) {
+				currentProject = projects[projectIndex];
+
+				let content = document.getElementById("content");
+				content.innerHTML = "";  // Clear content div
+
+				let title = document.createElement("input");  // Title
+				title.id = "content-title";
+				title.value = currentProject["title"];
+				title.spellcheck = false;
+
+				let description = document.createElement("input");  // Description
+				description.id = "content-description";
+				description.value = currentProject["description"];
+				description.spellcheck = false;
+
+				// Add "add stage" button
+				let addStageButton = document.createElement("div");
+				addStageButton.classList.add("add-button");
+				addStageButton.innerHTML = "+ Stage";
+				addStageButton.onclick = addStage;
+
+				let board = document.createElement("div");  // The board itself
+				board.id = "board";
+
+				let boardTable = document.createElement("table");  // The board table
+				board.appendChild(boardTable);  // Add board table to table div
+
+
+				// Combine all
+				content.appendChild(title);
+				content.appendChild(description);
+				content.appendChild(addStageButton);
+				content.appendChild(board);
+
+				loadSidenav()
+				loadContent();
+			}
+
+			function loadSidenav() {
+				// Add all available projects
+				let sidenav = document.getElementById("sidenav");
+				sidenav.innerHTML = "";
+				for (var pi in projects) {
+					let snproj = document.createElement("a");
+					snproj.innerHTML = projects[pi]["title"];
+
+					snproj.style.borderLeft = "10px solid " + projects[pi]["color"];
+
+					snproj.onmouseover = function() {
+						snproj.style.borderLeftWidth = "30px";
+						snproj.style.backgroundColor = "#f0f0f0";
+					};
+
+					snproj.onclick = function() {
+						loadLayout(getChildIndex(this));
+					}
+
+					snproj.onmouseleave = function() {
+						snproj.style.borderLeftWidth = "10px";
+						snproj.style.backgroundColor = "#f9f9f9";
+					};
+
+					snproj.classList.add("sidenav-project");
+					sidenav.appendChild(snproj);
+				}
+
+				// Add "add project" button
+				let addProjectButton = document.createElement("div");
+				addProjectButton.classList.add("add-button");
+				addProjectButton.innerHTML = "+ Project";
+				addProjectButton.onclick = addProject;
+				sidenav.appendChild(addProjectButton);
+			}
+
+			function cardContextMenu(event) {
+				let cm = document.getElementById("context-menu-card");
+
+				// Reset context menu
+				cm.style.display = "none";
+
+				cm.style.display = "block";
+				cm.style.left = event.clientX + "px";
+				cm.style.top = event.clientY + "px";
+
+			}
+
+			function cardContextMenuClose() {
+				document.getElementById("context-menu-card").style.display = "none";
+			}
+
+			function randomColor() {
+				let hue = Math.floor(Math.random() * 361);
+				let sat = 100;
+				let light = 60;
+
+				return "hsl("+hue+", "+sat+"%, "+light+"%)";
+			}
+
+			function addProject() {
+				let newProject = {
+					"title": "My Project",
+					"color": randomColor(),
+					"description": "Add a description here!",
+					"stages": []
+				}
+				projects.push(newProject);
+
+				loadLayout(projects.length - 1);
+				loadSidenav();
+			}
+
+			function addStage() {
+				let newStage = {
+					"title": "New stage",
+					"cards": {}
+				}
+
+				currentProject["stages"].push(newStage);
+
+				loadContent();
+			}
+
+			function addCard() {
+				let card = {
+					"text": "Hello, World!"
+				}
+
+				let stageIndex = this.parentNode.cellIndex;
+				let cardId;
+
+				while (true) {
+					cardId = genId();
+
+
+					/*
+					Checking if the generated Id already exists; I feel weird
+					not checking this, sorry. But what if all 340282366920938463463374607431768211456
+					possible solutions are used? FUCK
+					*/
+
+					let allCardIds = [];
+					for (var project of projects) {
+						for (var stage of project["stages"]) {
+							for (var _cardId of Object.keys(stage["cards"])) {
+								allCardIds.push(_cardId);
+							}
+						}
+					}
+
+					if (!allCardIds.includes(cardId)) {
+						break;
+					}
+				}
+
+
+				currentProject["stages"][stageIndex]["cards"][cardId] = card;
+				loadContent();
+			}
+
 			function calcCursorDistance(element, mx, my) {
 				// From https://www.kirupa.com/html5/get_element_position_using_javascript.htm
 
 				var xPos = 0;
+				var yPos = 0;
 
 				let _element = element;
 				while (element) {
@@ -133,6 +296,8 @@
 						index--;
 					}
 
+					console.log(cardsArray, index);
+
 					var newStagesObject = Object.fromEntries([
 					    ...cardsArray.slice(0, index - 1),
 					    cardsArray[index - 1],
@@ -179,14 +344,14 @@
 				setTimeout(() => (this.classList.add("card-content-invisible")), 0);
 			}
 
-			function dragEnd() {
+			function dragEnd(event) {
 				clearInterval(dragging);
 				draggedCard = null;
 				this.classList.remove("card-content-invisible");
-				reloadContent();
+				loadContent();
 			}
 
-			function dragEnter() {}
+			function dragEnter(event) {}
 
 			function dragOver(event) {
 				/*
@@ -201,10 +366,8 @@
 
 			function dragDrop(event) {
 				let x = event.target.cellIndex;
-				let y = getChildIndex(event.target.parentNode) / 2 - 0.5;
+				let y = getChildIndex(event.target.parentNode) / 2 - 1;
 				let cardId = draggedCard.id.slice(5);
-
-				//console.log(draggedCard.id, "->", "X = " + x + ", Y = " + y);
 
 				// findStageFromId can return false, add an error for this
 				let stage = findStageFromId(draggedCard.id);
@@ -213,8 +376,6 @@
 
 				var goingUp;
 				if (stage == newStage) {
-					console.log("SAME STAGE");
-
 					if (Object.keys(getCardsFromStage(stage)).indexOf(cardId) > y) {
 						goingUp = false;
 					} else {
@@ -222,7 +383,6 @@
 					}
 
 					if (y == Object.keys(getCardsFromStage(stage)).indexOf(cardId) || y == Object.keys(getCardsFromStage(stage)).indexOf(cardId) + 1) {
-						console.log("SAME POS");
 						return;
 					}
 				} else {
@@ -243,7 +403,7 @@
 				droppedCard = cardId;
 			}
 
-			function dragLeave() {
+			function dragLeave(event) {
 				/*
 				this.classList.remove("drop-area-hover");
 				this.classList.add("drop-area-hover-leave");
@@ -258,9 +418,7 @@
 				// Get the closest drop area element relative to mouse
 				for (var dropArea of document.getElementsByClassName("drop-area")) {
 					dist = calcCursorDistance(dropArea, event.x, event.y);
-					//console.log(dist, closestDistance);
 					if ((closestDistance == null || closestElement == null) || dist < closestDistance) {
-						//console.log("  SET TO", dist);
 						closestDistance = dist;
 						closestElement = dropArea;
 					}
@@ -284,36 +442,49 @@
 				}
 			}
 
-			currentProject = projects[0];
-			var draggedCard = null;
-			var droppedCard = null;  // Id
-
-			document.body.addEventListener("drag", dragging);
-
-			document.getElementById("content-title").value = currentProject["title"];
-			document.getElementById("content-description").value = currentProject["description"];
-
-			let sidenav = document.getElementById("sidenav");
-			for (var project of projects) {
-				let snproj = document.createElement("a");
-				snproj.innerHTML = project["title"];
-				snproj.classList.add("sidenav-project");
-				sidenav.appendChild(snproj);
-			}
-
-			function reloadContent() {
+			function loadContent() {
 				let table = document.getElementById("board").getElementsByTagName("table")[0];
 				table.innerHTML = "";
 
 				let stageRow = document.createElement("tr");
 				for (var stageIndex in currentProject["stages"]) {
 					let stageTitle = document.createElement("th");
-					stageTitle.innerHTML = currentProject["stages"][stageIndex]["title"];
-					stageTitle.classList.add("content-table-title");
+
+					let stageTitleInput = document.createElement("input");
+					stageTitleInput.classList.add("content-table-title");
+					stageTitleInput.value = currentProject["stages"][stageIndex]["title"];
+					stageTitleInput.spellcheck = false;
+
+					stageTitle.appendChild(stageTitleInput);
 					stageRow.appendChild(stageTitle);
 				}
 
 				table.appendChild(stageRow);
+
+				// Add the row for all the "add card" buttons
+				let stageButtonsRow = document.createElement("tr");
+				stageButtonsRow.id = "buttons-table-row"
+				for (var stageIndex in currentProject["stages"]) {
+					// Add "add card" button
+					let addStageButtonElement = document.createElement("td");
+
+					let addStageButton = document.createElement("div");
+					addStageButton.classList.add("add-button");
+					addStageButton.style.display = "block";
+					addStageButton.style.marginLeft = "auto";
+					addStageButton.style.marginRight = "auto";
+					addStageButton.style.marginTop = "0px";
+
+					addStageButton.innerHTML = "+ Card";
+					addStageButton.onclick = addCard;
+					addStageButtonElement.appendChild(addStageButton);
+
+					stageButtonsRow.appendChild(addStageButtonElement);
+
+				}
+
+				table.appendChild(stageButtonsRow);
+
 
 				var dropAreaRow = document.createElement("tr");
 				for (var i = 0; i < Object.keys(currentProject["stages"]).length; i++) {
@@ -339,8 +510,9 @@
 						let card = document.createElement("td");
 						card.classList.add("card");
 						card.draggable = true;
-						card.addEventListener("dragstart", dragStart);
-						card.addEventListener("dragend", dragEnd);
+						card.ondragstart = dragStart;
+						card.ondragend = dragEnd;
+						card.oncontextmenu = cardContextMenu;
 
 						let textContentKey = Object.keys(stage["cards"])[level];
 
@@ -400,20 +572,6 @@
 				dropArea.addEventListener("dragDrop", dragDrop);
 				dropArea.addEventListener("dragLeave", dragLeave);
 
-				let snprojects = document.getElementsByClassName("sidenav-project");
-				for (var i = 0; i < projects.length; i++) {
-					let singleProject = snprojects[i];
-					singleProject.style.borderLeft = "10px solid " + projects[i]["color"];
-					singleProject.onmouseover = function() {
-						singleProject.style.borderLeftWidth = "30px";
-						singleProject.style.backgroundColor = "#f0f0f0";
-					};
-					singleProject.onmouseleave = function() {
-						singleProject.style.borderLeftWidth = "10px";
-						singleProject.style.backgroundColor = "#f9f9f9";
-					};
-				}
-
 				if (droppedCard != null) {
 					try {
 						let tempCard = document.getElementById("card-" + droppedCard);
@@ -430,7 +588,16 @@
 				}
 			}
 
-			reloadContent();
+			var currentProject;
+			var draggedCard = null;
+			var droppedCard = null;  // Id
+
+			document.body.ondrag = dragging;
+			document.body.onclick = cardContextMenuClose;
+
+			loadLayout(0);
+			loadSidenav();
+			loadContent();
 		</script>
 	</body>
 </html>
