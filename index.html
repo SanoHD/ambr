@@ -16,6 +16,7 @@
 		<script type="text/javascript">
 			const copy = require("copy-to-clipboard");
 			const fs = require("fs");
+
 			let projects = [
 				{
 					"title": "Creating ambr",
@@ -72,21 +73,27 @@
 				let footer = document.getElementById("footer");
 
 				let idsInFooter = [];
-				for (var tn of document.children) {
+				for (var tn of footer.children) {
 					idsInFooter.push(tn.id);
 				}
 
 				if (idsInFooter.includes("footer-info")) {
 					// If there already is text in the footer, wait until its gone
-					// and try again after 1 second (1000 milliseconds)
+					// and try again after some time. A delay is given by the second setTimeout function
 					setTimeout(function() {
 						setFooterInfo(text);
-					}, 2000);
+					}, 500);
+
 				} else {
 					let infoText = document.createElement("p");
 					infoText.id = "footer-info";
 					infoText.innerHTML = text;
 					footer.appendChild(infoText);
+
+					// Remove the text after 2 seconds (2000 milliseconds, duh!)
+					setTimeout(function() {
+						footer.removeChild(infoText);
+					}, 2000);
 				}
 			}
 
@@ -210,12 +217,14 @@
 				optionCopyText.innerHTML = "Copy Text";
 				optionCopyText.onclick = function() {
 					copy(clickedCard.firstElementChild.value);
+					setFooterInfo("Copied Text to Clipboard");
 				}
 
 				let optionCopyCardId = document.createElement("p");
-				optionCopyCardId.innerHTML = "Copy Card Id";
+				optionCopyCardId.innerHTML = "Copy Card ID";
 				optionCopyCardId.onclick = function() {
 					copy(clickedCard.id.slice(5));
+					setFooterInfo("Copied Card ID to Clipboard");
 				}
 
 				let optionDeleteCard = document.createElement("p");
@@ -422,6 +431,7 @@
 			}
 
 			function dragStart(event) {
+				cardContextMenuClose();
 				draggedCard = this;
 				droppedCard = null;
 				setTimeout(() => (this.classList.add("card-content-invisible")), 0);
@@ -689,10 +699,6 @@
 			loadLayout(0);
 			loadSidenav();
 			loadContent();
-
-			setFooterInfo("Hey, welcome!");
-			setFooterInfo("How are you?");
-			setFooterInfo("Bye!");
 		</script>
 	</body>
 </html>
