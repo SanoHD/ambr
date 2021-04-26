@@ -7,8 +7,8 @@ exports.addProject = function() {
 	}
 	projects.push(newProject);
 
-	loadLayout(projects.length - 1);
-	loadSidenav();
+	loading.loadLayout(projects.length - 1);
+	loading.loadSidenav();
 }
 
 exports.addStage = function() {
