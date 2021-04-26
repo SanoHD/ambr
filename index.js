@@ -1,4 +1,4 @@
-const {app, BrowserWindow, Menu, MenuItem} = require("electron");
+const {app, BrowserWindow, Menu, MenuItem, dialog} = require("electron");
 const url = require("url");
 const path = require("path");
 
@@ -16,14 +16,17 @@ menu.append(new MenuItem({
 let win;
 function createWindow() {
 	win = new BrowserWindow({
-		width: 1920,
-		height: 1080,
+		show: false,
+		width: 1280,
+		height: 720,
 
 		webPreferences: {
 			nodeIntegration: true,
 			contextIsolation: false
 		}
 	});
+
+	win.maximize();
 
 	win.loadURL(url.format({
 		pathname: path.join(__dirname, "src/index.html"),
