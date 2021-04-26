@@ -4,7 +4,7 @@
   "description": "Kanban board tool with timelines",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron index.js"
   },
   "author": "CMinusMinus",
   "license": "ISC",
