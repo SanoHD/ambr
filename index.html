@@ -6,17 +6,15 @@
 		<link rel="stylesheet" type="text/css" href="css/main.css">
 	</head>
 	<body style="padding: 20px">
-		<div id="context-menu-card">
-			<p>hi</p>
-		</div>
+		<div id="context-menu-card"></div>
 
-		<div id="sidenav">
-		</div>
+		<div id="sidenav"></div>
+		<div id="content"></div>
 
-		<div id="content">
-		</div>
+		<div id="footer"></div>
 
 		<script type="text/javascript">
+			const copy = require("copy-to-clipboard");
 			const fs = require("fs");
 			let projects = [
 				{
@@ -42,7 +40,7 @@
 									"text": "nothing lol"
 								},
 								"cb3ba35f40fa0edbd353f63cc6824fc6": {
-									"text": "heeyyy Vsauce, Mchael here. This is a pretty long sentence. Or is it?"
+									"text": "heeyyy Vsauce, Michael here. This is a pretty long sentence. Or is it?"
 								},
 								"05b70f0ba3ccb6259ac0cb4bc1c2375a": {
 									"text": "(Bottom text)"
@@ -70,6 +68,28 @@
 				return id;
 			}
 
+			function setFooterInfo(text) {
+				let footer = document.getElementById("footer");
+
+				let idsInFooter = [];
+				for (var tn of document.children) {
+					idsInFooter.push(tn.id);
+				}
+
+				if (idsInFooter.includes("footer-info")) {
+					// If there already is text in the footer, wait until its gone
+					// and try again after 1 second (1000 milliseconds)
+					setTimeout(function() {
+						setFooterInfo(text);
+					}, 2000);
+				} else {
+					let infoText = document.createElement("p");
+					infoText.id = "footer-info";
+					infoText.innerHTML = text;
+					footer.appendChild(infoText);
+				}
+			}
+
 			function loadLayout(projectIndex) {
 				currentProject = projects[projectIndex];
 
@@ -90,19 +110,28 @@
 				let addStageButton = document.createElement("div");
 				addStageButton.classList.add("add-button");
 				addStageButton.innerHTML = "+ Stage";
+				addStageButton.style.float = "right";
+				addStageButton.style.marginTop = "100px";
+				addStageButton.style.marginRight = "50px";
 				addStageButton.onclick = addStage;
 
 				let board = document.createElement("div");  // The board itself
 				board.id = "board";
 
 				let boardTable = document.createElement("table");  // The board table
+
+				// For the "add stage" button
+				boardTable.style.width = "80%";
+				boardTable.style.float = "left";
+
+				board.appendChild(addStageButton);
 				board.appendChild(boardTable);  // Add board table to table div
 
+				50 +
 
 				// Combine all
 				content.appendChild(title);
 				content.appendChild(description);
-				content.appendChild(addStageButton);
 				content.appendChild(board);
 
 				loadSidenav()
@@ -146,15 +175,60 @@
 			}
 
 			function cardContextMenu(event) {
+				let clickedCard;
+				// Check if the user clicked on the text. If so, it should
+				// work the same as when the user clicked its outer box (its parent)
+				if (event.target.tagName != "TD") {
+					clickedCard = event.target.parentNode;
+				} else {
+					clickedCard = event.target
+				}
+
 				let cm = document.getElementById("context-menu-card");
 
 				// Reset context menu
 				cm.style.display = "none";
 
-				cm.style.display = "block";
-				cm.style.left = event.clientX + "px";
-				cm.style.top = event.clientY + "px";
+				// Open context menu
+				if (settings["slide-context-menu-card"]) {
+					cm.style.display = "block";
+					cm.style.left = event.clientX + "px";
+					cm.style.top = event.clientY + "px";
+				} else {
+					setTimeout(function() {
+						cm.style.display = "block";
+						cm.style.left = event.clientX + "px";
+						cm.style.top = event.clientY + "px";
+					}, 0);
+				}
 
+				/*
+				<p style="background-color: #ffeeee">Delete Card</p>
+				*/
+
+				let optionCopyText = document.createElement("p");
+				optionCopyText.innerHTML = "Copy Text";
+				optionCopyText.onclick = function() {
+					copy(clickedCard.firstElementChild.value);
+				}
+
+				let optionCopyCardId = document.createElement("p");
+				optionCopyCardId.innerHTML = "Copy Card Id";
+				optionCopyCardId.onclick = function() {
+					copy(clickedCard.id.slice(5));
+				}
+
+				let optionDeleteCard = document.createElement("p");
+				optionDeleteCard.innerHTML = "Delete Card";
+				optionDeleteCard.style.backgroundColor = "#ffeeee";
+				optionDeleteCard.onclick = function() {
+					cardRemove(clickedCard.id.slice(5));
+				}
+
+				cm.innerHTML = ""; // Clear context menu first
+				cm.appendChild(optionCopyText);
+				cm.appendChild(optionCopyCardId);
+				cm.appendChild(optionDeleteCard);
 			}
 
 			function cardContextMenuClose() {
@@ -257,12 +331,21 @@
 				return dist;
 			}
 
-			function cardRemove(id, cellIndex) {
-				for (var column of Object.keys(currentProject["stages"][cellIndex])) {
-					if (column == id) {
-						delete column;
+			function cardRemove(id) {
+				let removed = false;
+				for (var stageIndex in currentProject["stages"]) {
+					for (var cardId of Object.keys(currentProject["stages"][stageIndex]["cards"])) {
+						if (cardId == id) {
+							delete currentProject["stages"][stageIndex]["cards"][cardId];
+							removed = true;
+							break
+						}
 					}
+
+					if (removed) {break}
 				}
+
+				loadContent();
 			}
 
 			function cardAdd(id, content, posY) {
@@ -365,6 +448,8 @@
 			}
 
 			function dragDrop(event) {
+				if (draggedCard == null) {return}
+
 				let x = event.target.cellIndex;
 				let y = getChildIndex(event.target.parentNode) / 2 - 1;
 				let cardId = draggedCard.id.slice(5);
@@ -411,6 +496,8 @@
 			}
 
 			function dragging(event) {
+				if (draggedCard == null) {return}
+
 				var closestElement = null;  // The element
 				var closestDistance = null;  // The distance of this element
 				var dist;
@@ -466,20 +553,20 @@
 				stageButtonsRow.id = "buttons-table-row"
 				for (var stageIndex in currentProject["stages"]) {
 					// Add "add card" button
-					let addStageButtonElement = document.createElement("td");
+					let addCardButtonElement = document.createElement("td");
 
-					let addStageButton = document.createElement("div");
-					addStageButton.classList.add("add-button");
-					addStageButton.style.display = "block";
-					addStageButton.style.marginLeft = "auto";
-					addStageButton.style.marginRight = "auto";
-					addStageButton.style.marginTop = "0px";
+					let addCardButton = document.createElement("div");
+					addCardButton.classList.add("add-button");
+					addCardButton.style.display = "block";
+					addCardButton.style.marginLeft = "auto";
+					addCardButton.style.marginRight = "auto";
+					addCardButton.style.marginTop = "0px";
 
-					addStageButton.innerHTML = "+ Card";
-					addStageButton.onclick = addCard;
-					addStageButtonElement.appendChild(addStageButton);
+					addCardButton.innerHTML = "+ Card";
+					addCardButton.onclick = addCard;
+					addCardButtonElement.appendChild(addCardButton);
 
-					stageButtonsRow.appendChild(addStageButtonElement);
+					stageButtonsRow.appendChild(addCardButtonElement);
 
 				}
 
@@ -589,6 +676,10 @@
 			}
 
 			var currentProject;
+			var settings = {
+				"slide-context-menu-card": true
+			}
+
 			var draggedCard = null;
 			var droppedCard = null;  // Id
 
@@ -598,6 +689,10 @@
 			loadLayout(0);
 			loadSidenav();
 			loadContent();
+
+			setFooterInfo("Hey, welcome!");
+			setFooterInfo("How are you?");
+			setFooterInfo("Bye!");
 		</script>
 	</body>
 </html>
