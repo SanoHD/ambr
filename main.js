@@ -1,6 +1,10 @@
-const {app, BrowserWindow, Menu, MenuItem, dialog} = require("electron");
+const {app, BrowserWindow, Menu, MenuItem} = require("electron");
 const url = require("url");
 const path = require("path");
+const fs = require("fs");
+
+const contentOps = require("./src/contentOps.js");
+
 
 const menu = new Menu();
 menu.append(new MenuItem({
@@ -8,6 +12,11 @@ menu.append(new MenuItem({
 	submenu: [{
 		role: "Open project",
 		accelerator: "Ctrl+O",
+		click: () => {}
+	},
+	{
+		role: "Save project",
+		accelerator: "Ctrl+S",
 		click: () => {}
 	}]
 }))
@@ -21,12 +30,14 @@ function createWindow() {
 		height: 720,
 
 		webPreferences: {
-			nodeIntegration: true,
-			contextIsolation: false
+			contextIsolation: false,
+			enableRemoteModule: true,
+			nodeIntegration: true
 		}
 	});
 
 	win.maximize();
+	win.webContents.openDevTools();
 
 	win.loadURL(url.format({
 		pathname: path.join(__dirname, "src/index.html"),
@@ -35,5 +46,5 @@ function createWindow() {
 	}));
 }
 
+Menu.setApplicationMenu(menu);
 app.on("ready", createWindow);
-//Menu.setApplicationMenu(menu);

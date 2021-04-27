@@ -5,13 +5,16 @@ const generate = require("./generate.js");
 const loading = require("./loading.js");
 const misc = require("./misc.js");
 
-const copy = require("copy-to-clipboard");
 const dialog = require("electron").remote.dialog;
-const fs = require("fs");
-const path = require("path");
+
+const copy = require("copy-to-clipboard");
 const {shell} = require("electron");
+const fs = require("fs");
+const mt = require("mousetrap");
+const path = require("path");
 
 var projects = [];
+var allProjectsArray;
 
 contentOps.loadProjects();
 
@@ -29,3 +32,10 @@ document.body.onclick = contextMenu.cardContextMenuClose;
 loading.loadLayout(0);
 loading.loadSidenav();
 loading.loadContent();
+
+mt.bind("ctrl+s", function() {
+	let result = contentOps.saveProject();
+	if (result === true) {
+		misc.setFooterInfo("Saved");
+	}
+});
