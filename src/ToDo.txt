@@ -4,3 +4,13 @@
 - Change footer info size
 - Make font size changeable
 - Make active project in sidenav stand out
+- Move openProject/saveProject to a different file
+- Implement other things than just text
+	- Code
+	- GitHub Issue
+	- Images / Videos / Audios
+	- Links
+- Add "remove project" option
+- Add "remove stage" option
+- Add "duplicate card" option to context menu
+- Add dark mode
