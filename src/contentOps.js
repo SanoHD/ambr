@@ -69,13 +69,124 @@ exports.loadProjects = function() {
 }
 
 exports.saveProject = function() {
-	console.log(dialog);
+	//
+	//   SAVE
+	//
 
-	let filePath = dialog.showOpenDialogSync({
-		properties: ["openFile"]
+	if ("projsrc" in currentProject) {
+		let srcFilePath = currentProject["projsrc"];
+
+		try {
+			fs.writeFileSync(srcFilePath, JSON.stringify(currentProject, null, 4), function(err) {
+				if (err) {
+					dialog.showMessageBoxSync({
+						message: "Could not write '" + srcFilePath + "' | " + e,
+						type: "error"
+					});
+					// Don't return, instead do 'save as'
+
+				} else {
+					return true;  // Saved
+				}
+			});
+
+			return true;  // Saved
+
+		} catch (e) {
+			dialog.showMessageBoxSync({
+				message: "Could not parse '" + srcFilePath + "' | " + e,
+				type: "error"
+			});
+
+			  // Don't return, instead do 'save as'
+		}
+	}
+
+
+
+	//
+	//   SAVE AS
+	//
+
+	let filePath = dialog.showSaveDialogSync({
+		title: "Save an ambr project file",
+		filters: [
+			{
+				name: "Ambr Project file",
+				extensions: ["ambrpro"]
+			}
+		]
 	});
 
-	console.log(filePath);
+	if (filePath === undefined) {
+		// User canceled
+		return;
+	}
+
+	filePath = filePath.replaceAll("\\", "/");
+
+	currentProject["projsrc"] = filePath;
+
+	try {
+		fs.writeFileSync(filePath, JSON.stringify(currentProject, null, 4), function(err) {
+			if (err) {
+				dialog.showMessageBoxSync({
+					message: "Could not write '" + filePath + "' | " + e,
+					type: "error"
+				});
+				return;
+			}
+		});
+	} catch (e) {
+		dialog.showMessageBoxSync({
+			message: "Could not parse '" + filePath + "' | " + e,
+			type: "error"
+		});
+		return;
+	}
+
+	if (filePath === undefined) {
+		return;
+
+	} else {
+		try {
+			let allProjectsFile = fs.readFileSync("projects/.allProjects.json", "utf8", function(err) {
+				if (err) {
+					dialog.showMessageBoxSync({
+						message: "Could not load 'ambr/projects/.allProjects.json' | " + e,
+						type: "error"
+					});
+					return;
+				}
+			});
+
+			allProjectsArray = JSON.parse(allProjectsFile);
+
+		} catch (e) {
+			dialog.showMessageBoxSync({
+				message: "Could not parse 'ambr/projects/.allProjects.json' | " + e,
+				type: "error"
+			});
+			return;
+		}
+
+		if (!allProjectsArray.includes(filePath)) {
+			allProjectsArray.push(filePath);
+		}
+
+		let fileString = JSON.stringify(allProjectsArray, null, 4);
+		fs.writeFileSync("projects/.allProjects.json", fileString, function(err) {
+			if (err) {
+				dialog.showMessageBoxSync({
+					message: "Could not save 'ambr/projects/.allProjects.json' | " + e,
+					type: "error"
+				});
+				return;
+			}
+		})
+	}
+
+	return true;
 }
 
 exports.addStage = function() {
@@ -161,6 +272,7 @@ exports.updateStageTitle = function(stageIndex, title) {
 
 exports.updateProjectName = function(name) {
 	currentProject["name"] = name;
+	loading.loadSidenav();
 }
 
 exports.updateProjectDescription = function(description) {
