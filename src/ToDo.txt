@@ -1,3 +1,5 @@
 - Add customize settings to modify important css rules
 - Add "import from .csv or .txt files"
 - Move logo to bottom-left corner in footer, make it smaller and remove shadow
+- Change footer info size
+- Make font size changeable
