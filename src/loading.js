@@ -60,6 +60,12 @@ exports.loadSidenav = function() {
 
 		snproj.style.borderLeft = "10px solid " + projects[pi]["color"];
 
+		if (projects[pi] === currentProject) {
+			snproj.style.fontFamily = "Lato-Bold";
+		} else {
+			snproj.style.fontFamily = "Lato";
+		}
+
 		snproj.onmouseover = function() {
 			snproj.style.borderLeftWidth = "30px";
 		};

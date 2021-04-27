@@ -51,7 +51,7 @@ input {
 
 #sidenav>a {
 	display: block;
-	font-family: Lato-Bold;
+	font-family: Lato;
 
 	color: var(--text-color);
 	background-color: transparent;
