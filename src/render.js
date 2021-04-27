@@ -36,6 +36,13 @@ loading.loadContent();
 mt.bind("ctrl+s", function() {
 	let result = contentOps.saveProject();
 	if (result === true) {
-		misc.setFooterInfo("Saved");
+		misc.setFooterInfo("Saved Project");
+	}
+});
+
+mt.bind("ctrl+o", function() {
+	let result = contentOps.openProject();
+	if (result === true) {
+		misc.setFooterInfo("Opened Project(s)");
 	}
 });

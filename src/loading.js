@@ -1,4 +1,4 @@
-exports.loadLayout = function(projectIndex) {
+exports.loadLayout = function(projectIndex = 0) {
 	currentProject = projects[projectIndex];
 
 	let content = document.getElementById("content");
@@ -62,7 +62,6 @@ exports.loadSidenav = function() {
 
 		snproj.onmouseover = function() {
 			snproj.style.borderLeftWidth = "30px";
-			snproj.style.filter = "contrast(0.9)";
 		};
 
 		snproj.onclick = function() {
@@ -71,7 +70,6 @@ exports.loadSidenav = function() {
 
 		snproj.onmouseleave = function() {
 			snproj.style.borderLeftWidth = "10px";
-			snproj.style.filter = "contrast(1)";
 		};
 
 		snproj.classList.add("sidenav-project");

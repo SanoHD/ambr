@@ -189,6 +189,100 @@ exports.saveProject = function() {
 	return true;
 }
 
+exports.openProject = function() {
+	let filePaths = dialog.showOpenDialogSync({
+		title: "Open an ambr project file",
+		filters: [
+			{
+				name: "Ambr Project file",
+				extensions: ["ambrpro"]
+			}
+		],
+		properties: ["multiSelections"]
+	});
+
+	for (var filePath of filePaths) {
+		if (filePath === undefined) {
+			// User canceled
+			return;
+		}
+
+		filePath = filePath.replaceAll("\\", "/");
+
+		try {
+			let allProjectsFile = fs.readFileSync("projects/.allProjects.json", "utf8", function(err) {
+				if (err) {
+					dialog.showMessageBoxSync({
+						message: "Could not load 'ambr/projects/.allProjects.json' | " + e,
+						type: "error"
+					});
+					return;
+				}
+			});
+
+			allProjectsArray = JSON.parse(allProjectsFile);
+
+		} catch (e) {
+			dialog.showMessageBoxSync({
+				message: "Could not parse 'ambr/projects/.allProjects.json' | " + e,
+				type: "error"
+			});
+			return;
+		}
+
+		if (allProjectsArray.includes(filePath)) {
+			dialog.showMessageBoxSync({
+				message: "This project is already loaded",
+				type: "error"
+			});
+
+			return;
+		} else {
+			allProjectsArray.push(filePath);
+		}
+
+		let apFileString = JSON.stringify(allProjectsArray, null, 4);
+		fs.writeFileSync("projects/.allProjects.json", apFileString, function(err) {
+			if (err) {
+				dialog.showMessageBoxSync({
+					message: "Could not save 'ambr/projects/.allProjects.json' | " + e,
+					type: "error"
+				});
+				return;
+			}
+		})
+
+		let fileString = fs.readFileSync(filePath, "utf8", function(err) {
+			if (err) {
+				dialog.showMessageBoxSync({
+					message: "Could not load '" + filePath + "' | " + e,
+					type: "error"
+				});
+				return;
+			}
+		})
+
+		let projectObject;
+		try {
+			projectObject = JSON.parse(fileString);
+		} catch (e) {
+			dialog.showMessageBoxSync({
+				message: "Could not parse '" + filePath + "' | " + e,
+				type: "error"
+			});
+			return;
+		}
+
+		projectObject["projsrc"] = filePath;
+		projects.push(projectObject);
+	}
+
+	console.log(projects);
+
+	loading.loadLayout(projects.length - 1);
+	return true;
+}
+
 exports.addStage = function() {
 	let newStage = {
 		"title": "New stage",
