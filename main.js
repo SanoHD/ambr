@@ -37,7 +37,6 @@ function createWindow() {
 	});
 
 	win.maximize();
-	win.webContents.openDevTools();
 
 	win.loadURL(url.format({
 		pathname: path.join(__dirname, "src/index.html"),
