@@ -46,3 +46,7 @@ mt.bind("ctrl+o", function() {
 		misc.setFooterInfo("Opened Project(s)");
 	}
 });
+
+mt.bind("ctrl+i", function() {
+	misc.setFooterInfo("Footer Info!");
+})
