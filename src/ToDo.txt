@@ -3,3 +3,4 @@
 - Move logo to bottom-left corner in footer, make it smaller and remove shadow
 - Change footer info size
 - Make font size changeable
+- Make active project in sidenav stand out
